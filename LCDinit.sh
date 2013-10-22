@@ -2,13 +2,12 @@
 
 ### BEGIN INIT INFO
 # Provides:          LCDinit
-# Required-Start:    
-# Required-Stop:     
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:	     0 1 6 
-# Short-Description: PiLCD for WebMSO28 startup
-# Description:       Gamepad to Mindstorm NXT 
-#                    Bluetooth bridge
+# Short-Description: Start PiLCD on boot
+# Description:       Start PiLCD IP display for WebMSO28 
 ### END INIT INFO
 #. /lib/lsb/init-functions
 

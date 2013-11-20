@@ -131,7 +131,7 @@ int main (void)
   FILE *pp;
   FILE *fp;
 
-  char wip[16];
+  char wip[32];
   char cBuf[32];
   int z;
 
@@ -158,10 +158,11 @@ int main (void)
   ioctl(fd, SIOCGIFADDR, &wfr);
   close(fd);
 
-  strncpy(wip,inet_ntoa(((struct sockaddr_in *)&wfr.ifr_addr)->sin_addr),12);
+  strncpy(wip,inet_ntoa(((struct sockaddr_in *)&wfr.ifr_addr)->sin_addr),16);
 
   printf("%s\n",inet_ntoa(((struct sockaddr_in *)&efr.ifr_addr)->sin_addr));
   printf("%s\n",inet_ntoa(((struct sockaddr_in *)&wfr.ifr_addr)->sin_addr));
+printf("%s \n",wip);
   sprintf(cBuf,"nslookup %s localhost\n",wip);
   pp = popen(cBuf,"r");
   if(pp != NULL){

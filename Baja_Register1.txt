@@ -1,0 +1,143 @@
+Baja control registers
+----------------------------------------------
+Simulated Serial port, Virtual Com port -> USB -> Parallel FPGA
+Baud Rate 460800, 8N1 
+Buffer threshold 3072
+
+
+(DSO, LA control registers)
+0x00
+0x01R	
+	Buffer Data 1024 x 4 words
+	every four byte reads = 1 position :10 bits(DSO) x 2 + 8 LA bits + 1 USB bit + 3 dummy bits 
+0x02R	
+	TrigStat (0..3)
+	0000 - DSO reset
+	0001 - Waiting for Arming
+	0010 - Armed 
+	0011 - Filling Pretrigger buffer
+	0100 - Filling complete waiting for Trigger event to happen
+	0101 - Trigger happened, filling post trigger buffer
+	0110 - Capture complete, waiting for data read command
+	0111 - Reading Buffer
+	1000 - Waiting for End of read buffer
+	4 - PwrDn reg readback
+	5 - SDO_ADC
+	6 - SDO_Mem	
+	7 - not use
+
+0x03	0..7 - DSO TrigVal(0..7) LSB	
+0x04	
+	0,1 - DSO TrigVal(8,9)
+	2 - MagTrigSlp 1= True/Rising, 0 = False/Falling
+	3, 4 - TrigValSel
+		00 - Ch 0
+		01 - Ch 1
+	5,6 - TrigModeSel
+		00 - DSO Magnitude Trig
+		01 - DSO Width Trig Less Than
+		10 - DSO Width Trig Greater or Equal
+		11 - Not used
+	7 - not used
+
+0x05	0,2 - TrigChSelVal
+		000 - ChA
+		001 - ChB
+		010 - Logic
+		011 - nc
+		100 - SPI
+		101 - I2C
+		110 - nc
+		111 - nc
+
+	3 - LogTrigSlp
+	4 - DC Relay Ch0, 0 = AC, 1 = DC
+	5 - DC Relay Ch1, 0 = AC, 1 = DC
+	6 - Attn Ch0, 0 = /10, 1 = /1
+	7 - Attn Ch1, 0 = /10, 1 = /1
+
+
+0x06	0 - SCLK
+	1 - SDIO
+	2 - CSB (active H)
+	3 - CSDAC1 (active H)
+	4 - CSDAC2 (active H)
+	5 - CSMem (active H)
+	6,7 - Not Used
+
+0x07	0..7 - TrigPos(0..7)
+0x08	0..7 - TrigPos(8,15)
+0x09	
+	0,1 - Clk source select 00=50Mhz, 01=100Mhz, 10=200Mhz, 11= 20Mhz and below
+	2,7 - ClkDiv bit 8,13
+0x0A    0..7 -  ClkDiv bit 0..7 (Clk rate = 100 Mhz / (ClkDiv-1)
+0x0B	0..7 - TrigWidthVal(0..7)
+
+0x0C	0..7 - Logic Tirgger Val
+0x0D	0..7 - Logic don't Care, 1 marks the bit position of don't care bit	
+
+0x0E	
+	0 - FSMReset 1= resets DSO FSM (pulse on write to reg) 	
+	1 - Armed DSO 1= Arms DSO for capture (pulse on write to reg)	
+	2 - ReadMode 1= Buffer Read Back, 0= DSO 	
+	3 - TrigEnd 1= Forces a fake trig (pulse on write to reg)	
+	4 - PwrDn 1= power down default = 0		
+	5 - not use
+	6 - ADCRst 1= Reset ADC default = 0 needs software pulse	
+	7 - not use
+0x0F	
+	*0 - Alternate Address Page 1
+	*1 - Alternate Address Page 2
+	2 - not used
+	3 - not used
+	4 - TrigOutSel, 1 = Cal 1khz out 0 = TrigPulseOut, Default = Off
+	5 - SlwClkMode, 1 = On, 0 = Off, Default = Off
+	6 - Glitch Trigger, 1 = On, 0 = Off, Default = Off
+	7 - Auto Trigdone reply control, Default = off 
+
+--------------------------------------------------------------
+*(Pat Gen registers)
+*Alt_1 0x00
+*Alt_1 0x01
+*Alt_1 0x02
+	0,1 - PatClk source select 00=50Mhz, 01=100Mhz, 10=200Mhz, 11= 20Mhz and below
+	2,7 - PatClkDiv bit 8,13
+			
+*Alt_1 0x03 0..7 -  PatClkDiv bit 0..7 (Clk rate = 100 Mhz / (PatClkDiv-2)
+*Alt_1 0x04 0..7 - Pat Gen Start Address(0..7)
+*Alt_1 0x05 0,1 - Pat Gen Start Address(8,9)
+*Alt_1 0x06 0..7 - Pat Gen Stop Address(0..7)
+*Alt_1 0x07 0,1 - Pat Stop Address(8,9)	
+*Alt_1 0x08
+	0 - Pat Gen Repeat Mode 1= repeat, 0 = one shot
+	1 - Pat Gen buffer Write Enable
+	2..3 - Pat Gen start mode 00 = Off, 01 = Armed, 10 = TrigPulse, 11 = Manual/Pat Gen Start 
+	
+*Alt_1 0x09
+	0 - Pat Gen Start
+*Alt_1 0x0A 0..7 - PatGen Buffer Data In (auto increment of FIFO address)
+*Alt_1 0x0B
+	0 - Pat Gen I/O bit for given buffer address. 1 = Out, 0  	
+*Alt_1 0x0C 0..6 - PatGen Loop Cnt, need min of 1 for one shot
+*Alt_1 0x0D PG Byte I/O CTL, 1 = Out, 0= In
+*Alt_1 0x0E
+*Alt_1 0x0F
+
+----------------------------------------------------------------
+(Serial Trigger Registers)
+*Alt_2 0x00 Serial TrigWd (31 downto 24) first bits to enter the shift register
+*Alt_2 0x01 Serial TrigWd (23 downto 16)
+*Alt_2 0x02 Serial TrigWd (15 downto 8)
+*Alt_2 0x03 Serial TrigWd (7 downto 0) last bits to enter the shift register
+*Alt_2 0x04 Serial TrigWd Ignor(31 downto 24)
+*Alt_2 0x05 Serial TrigWd Ignor(23 downto 16)
+*Alt_2 0x06 Serial TrigWd Ignor(15 downto 8)
+*Alt_2 0x07 Serial TrigWd Ignor(7 downto 0)
+*Alt_2 0x08 0,1 - SPI Mode
+		00 - Mode 0
+		01 - Mode 1
+		10 - Mode 2
+		11 - Mode 3
+	   
+	   2 -  SPI Trigdata Source, 0 = SI, 1 = SO, default = SI
+	   3..7 - Not used

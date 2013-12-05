@@ -153,11 +153,6 @@ unsigned char RBWait;
 unsigned char MsoBusy=0;
 long sidA=0,sidB=0,sidC=0,sidD=0,sidE=0;
 
-//float AnalogDataFA[1024];
-//float AnalogDataFB[1024];
-
-
-
 
 typedef enum {
     TRIG_CHAN_DSO,
@@ -176,10 +171,6 @@ typedef enum  {
 	TRIG_DSO_LT,
 	nMaxTrigModedefines
 } TrigModeDefines;
-/*
-TrigModeDefines TrigModeDSO[0] = TRIG_DSO_EDGE;
-TrigModeDefines TrigModeDSO[1] = TRIG_DSO_EDGE;
-*/
 
 //#define _POSIX_SOURCE 1 // POSIX compliant source 
 #define FALSE 0
@@ -237,27 +228,6 @@ void GetSerPort28()
 
 }
 //-----------------------------------------------------
-/*
-void GetSerPort()
-{
-	FILE *fp;
-//	char * line = NULL;
-	size_t len = 0;
-	//ssize_t read;
-
-	// get MSO device handle from msoif.txt
-	fp = fopen("msoif.txt", "r");
-	if (fp == NULL)
-	{
-	 printf("Missing msoif.txt\n");
-	 exit(0);
-	}
-
-	getline(&line, &len, fp);
-	line[strlen(line) - 1] = 0; //removes last character
-    fclose(fp);
-}*/
-//-----------------------------------------------------
 
 //Configure serial port
 void portconfig(int *device, int len)
@@ -279,40 +249,16 @@ void portconfig(int *device, int len)
 	cfsetispeed(&newtio, BAUDRATE);
 	cfsetospeed(&newtio, BAUDRATE);
 
-//	newtio.c_cflag |= (CRTSCTS | CS8 | CLOCAL | CREAD );//exp
 	newtio.c_cflag |= (CS8 | CLOCAL | CREAD );//exp
-	
 	newtio.c_lflag = 0;
-
 	newtio.c_iflag |= IGNPAR;
-//	newtio.c_iflag |= IGNBRK;
-//	newtio.c_iflag |= IGNCR;
-
 	newtio.c_oflag = 0;
-
-/*	newtio.c_cflag &= ~CSIZE;
-	newtio.c_cflag |= (CRTSCTS | CS8 | CLOCAL | CREAD);//exp
-
-	newtio.c_lflag |= NOFLSH;
-	newtio.c_lflag |= FLUSHO;
-	newtio.c_lflag 	&= ~(ICANON | ECHO | ECHOE| ECHOK | ISIG);
-
-	newtio.c_iflag &= ~INPCK;
-	newtio.c_iflag &= ~IXON;
-	newtio.c_iflag &= ~IXOFF;
-	newtio.c_iflag |= IGNBRK;
-	newtio.c_iflag |= IGNCR;
-
-	newtio.c_oflag &= ~OPOST;
-*/
 	newtio.c_cc[VTIME]    = 0;   // inter-character timer unused 
 	newtio.c_cc[VMIN]     = len;   // blocking read until 5 chars received 
 
 
 	tcflush(*device,TCIOFLUSH);//flushes untransmitted output
-//	tcflush(*device,TCOFLUSH);//flushes untransmitted output
 	cod=tcsetattr(*device,TCSANOW,&newtio);	//changes occurs immediately.
-//	cod=tcsetattr(*device,TCSAFLUSH,&newtio);	//changes occurs immediately.
 	
 	if(cod<0)
 	{
@@ -362,15 +308,11 @@ unsigned int SerBufInit(unsigned int StartVal)
 //returns trigstat with open/close fd_w
 unsigned char CheckTriggerStatus()
 {
-//	char * rdbuf = NULL;
-//	size_t len = 0;
 	int lcnt = 0;
 	int res;
-//	int resw,resw2;
 	unsigned char buf[10];
 	int bytes;
 
-//	printf("%s\n",line);
 	fd_w = open(line,O_RDWR | O_NOCTTY |  O_NDELAY);	//opening serial port device for write action
 
 	if(fd_w < 0)
@@ -381,8 +323,6 @@ unsigned char CheckTriggerStatus()
 	else
 	{
 		portconfig(&fd_w,1);
-
-//		tcflush(fd_w, TCIOFLUSH);
 
 		BufTransCnt = 0;
 		BufTransCnt = SerBufInit(BufTransCnt);
@@ -404,17 +344,11 @@ unsigned char CheckTriggerStatus()
 			else
 			{
 				lcnt++;
-//				write(fd_w,HexBuf,BufTransCnt);  
-//				usleep(1000);
 			}
 				usleep(5);
 		}
 
  		tcflush(fd_w, TCIOFLUSH);
-
-//		res = read(fd_w,buf,1);   // returns after 5 chars have been input 
-//		printf("nByte=%d val=%x cnt=%d resw=%d resw2=%d\n",res,buf[0],lcnt,resw,resw2);
-//		printf("nByte=%d val=%x cnt=%d\n",res,buf[0],lcnt);
 
 		close(fd_w);
 		return buf[0];
@@ -438,19 +372,6 @@ unsigned char CheckTriggerStatusRaw()
 	write(fd_w,HexBuf,BufTransCnt);
 	usleep(5);
 
-/*
-    tcgetattr(fd_w,&oldtio); // save current port settings
-	bzero(&newtio, sizeof(newtio));
-	newtio.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
-	newtio.c_iflag = IGNPAR;
-	newtio.c_oflag = 0;
-	newtio.c_lflag = 0;
-	newtio.c_cc[VTIME]    = 0;   // inter-character timer unused
-	newtio.c_cc[VMIN]     = 1;   // blocking read until 5 chars received
-//	tcflush(fd_w, TCIFLUSH);
-	tcsetattr(fd_w,TCSANOW,&newtio);
-	write(fd_w,HexBuf,BufTransCnt);  //experimental
-*/
 
 		STOP = FALSE;
 		while (STOP==FALSE){       // loop for input 
@@ -462,48 +383,17 @@ unsigned char CheckTriggerStatusRaw()
 			else
 			{
 				lcnt++;
-//				write(fd_w,HexBuf,BufTransCnt);  
-//				usleep(1000);
 			}
 			usleep(5);
 		}
 
  		tcflush(fd_w, TCIOFLUSH);
-
-	/*	STOP = FALSE;
-	while (STOP==FALSE){       // loop for input
-		if((lcnt ==10)&&(bytes == 0)) write(fd_w,HexBuf,BufTransCnt);
-		ioctl(fd_w, FIONREAD, &bytes);
-		if(bytes >= 1) {
-			res = read(fd_w,buf,bytes);
-			buf[res]=0;               // so we can printf...
-			STOP = TRUE;
-		}
-		else
-			usleep(1000);
-		lcnt++;
-	}
-*/
-/*
-	STOP = FALSE;
-	while (STOP==FALSE)
-	{       // loop for input
-	  res = read(fd_w,buf,255);   // returns after 5 chars have been input
-	  buf[res]=0;               // so we can printf...
-//	  printf(":%s:%d\n", buf, res);
-//	  printf(":%c:%x\n", buf[0], buf[0]);
-	  if (buf[0]!=0x00) STOP=TRUE;
-	}
-
-*/
-//	tcsetattr(fd_w,TCSANOW,&oldtio);
 	return buf[0];
 }
 
 //-----------------------------------------------------
 void ReadBuffer()
 {
-//	int res;
 	unsigned char bbb[4200];
 	int	Cnt;
 	int BytesToRead, AdjAddr;
@@ -539,9 +429,6 @@ void ReadBuffer()
 				STOP = TRUE;
 			}
 			else{
-//				if((lcnt ==10)&&(bytes == 0)) write(fd_w,HexBuf,BufTransCnt);  
-//				else usleep(1000);
-//				usleep(10);
 			}
 			usleep(5);
 			lcnt++;
@@ -553,8 +440,6 @@ void ReadBuffer()
 
 
 		AdjAddr = 0;
-//		BytesToRead = 4096;
-//		BytesToRead = res;
 	int CntPos;
 	int CntAdj;
         for (Cnt = AdjAddr; Cnt < (BytesToRead / 4); Cnt++)//x4
@@ -574,130 +459,10 @@ void ReadBuffer()
             AnalogDataB[CntAdj] = mm | kk;
             LogicData[CntAdj] = nn | pp;
         }
-
-   //     for (Cnt = AdjAddr; Cnt < (BytesToRead / 4); Cnt++)//x4
-//		printf("%X %X %X\n",AnalogDataA[Cnt],AnalogDataB[Cnt],LogicData[Cnt]); 
-
-//		return buf[0];
 	}
 }
 
 //-----------------------------------------------------
-/*void ReadBuffer2()
-{
-//	int res;
-	unsigned char bbb[4200];
-	int	Cnt;
-	int BytesToRead, AdjAddr;
-	unsigned short ii, jj, mm, kk, nn, pp;
-	int bytes;
-	int lcnt = 0;
-	FILE *fp;
-	char sBuf[512];
-
-
-	fd_w = open(line,O_RDWR | O_NOCTTY |  O_NDELAY);	//opening serial port device for write action
-	if(fd_w < 0){
-         printf("Serial error RB\n");
-	}
-	else
-	{
-		portconfig(&fd_w,4090);
-		tcflush(fd_w, TCIOFLUSH);
-
-		DSOCtlBase = 0x10;
-		BufTransCnt = 0;
-		BufTransCnt = SerBufInit(BufTransCnt);
-		HexBuf[BufTransCnt++] = BufTransUpper(0x01, 0x00);
-		HexBuf[BufTransCnt++] = BufTransLower(0x01, 0x00);
-		HexBuf[BufTransCnt++] = 0x7E;
-		write(fd_w,HexBuf,BufTransCnt);  
-		usleep(5);
-
-		lcnt = 0;
-		STOP = FALSE;
-		while ((STOP==FALSE)&&(lcnt<2000)){       // loop for input 
-			ioctl(fd_w, FIONREAD, &bytes);
-			if(bytes >= 4095) {
-				BytesToRead = read(fd_w,bbb,bytes);
-				STOP = TRUE;
-			}
-			else{
-//				if((lcnt ==10)&&(bytes == 0)) write(fd_w,HexBuf,BufTransCnt);  
-//				else usleep(1000);
-//				usleep(10);
-			}
-			usleep(5);
-			lcnt++;
-		}
-
-		tcflush(fd_w, TCIOFLUSH);
-
-		close(fd_w);
-
-
-		AdjAddr = 0;
-//		BytesToRead = 4096;
-//		BytesToRead = res;
-	int CntPos;
-	int CntAdj;
-
-    double VbitA,VbitB;
-    int PAtnA,PAtnB;	
-
-    VbitA=GetVbit(0);
-    VbitB=GetVbit(1);
-    PAtnA=ProbeAttn[0];
-    PAtnB=ProbeAttn[1];
-
-
-	
-
-	sprintf(sBuf,"tmp/msodata%d.csv",int(CurrSid));
-	fp = fopen(sBuf, "wb");
-
-//  	fp = fopen("msodata.csv", "wb");
-	if(fp)
-	{
-      for (Cnt = AdjAddr; Cnt < (BytesToRead / 4); Cnt++)//x4
-        {
-            CntPos= Cnt*4;
-	    CntAdj=Cnt-AdjAddr;
-	    ii = bbb[CntPos];              //dso 1
-            jj = (bbb[CntPos + 1] & 0x03) << 8; //dso1
-
-            kk = (bbb[CntPos + 1] & 0xfc) >> 2; //dso2
-            mm = (bbb[CntPos + 2] & 0x0f) << 6; //dso2
-
-            nn = (bbb[CntPos + 2] & 0xf0) >> 4; //la
-            pp = (bbb[CntPos + 3] & 0x0f) << 4; //la
-
-//            AnalogDataA[CntAdj] = jj | ii;
-//           AnalogDataB[CntAdj] = mm | kk;
-            AnalogVoltageDataA[CntAdj] =
-                CalcVoltageFromRawValue( (jj | ii),
-                VbitA,
-                PAtnA);
-
-            AnalogVoltageDataB[CntAdj] =
-                CalcVoltageFromRawValue((mm | kk),
-                VbitB,
-                PAtnB);
-
-			
-			LogicData[CntAdj] = nn | pp;
-			fprintf(fp,"%f\t%f\t%d\n",AnalogVoltageDataA[CntAdj],AnalogVoltageDataB[CntAdj],LogicData[CntAdj]); 
-			
-        }
-		fclose(fp);
-	}
-
-   //     for (Cnt = AdjAddr; Cnt < (BytesToRead / 4); Cnt++)//x4
-//		printf("%X %X %X\n",AnalogDataA[Cnt],AnalogDataB[Cnt],LogicData[Cnt]); 
-
-//		return buf[0];
-	}
-}*/
 //-----------------------------------------------------
 //Issues Reset to ADC and puts the MSO in ready to be arm mode
 void ResetADC()
@@ -780,37 +545,6 @@ void ClkRate_Out(unsigned char MSB, unsigned char LSB)
 }
 
 //-----------------------------------------------------
-/*void DAC_Out(unsigned short DacVal)
-{
-	unsigned char MSB, LSB;
-	fd_w = open(line,O_RDWR | O_NOCTTY |  O_NDELAY);	//opening serial port device for write action
-	if(fd_w < 0){
-         printf("Serial error DAC Out\n");
-	}
-	else
-	{
-		portconfig(&fd_w);
-		DSOCtlBase = 0x10;
-		LSB = (unsigned char)(DacVal & 0x00ff);
-		MSB = (unsigned char)((DacVal & 0xff00) >> 8);
-		//DSOCtlBase = 0x10;
-		BufTransCnt = 0;
-		BufTransCnt = SerBufInit(BufTransCnt);
-		HexBuf[BufTransCnt++] = BufTransUpper(0x0c, MSB);
-		HexBuf[BufTransCnt++] = BufTransLower(0x0c, MSB);
-		HexBuf[BufTransCnt++] = BufTransUpper(0x0d, LSB);//DAC LSB
-		HexBuf[BufTransCnt++] = BufTransLower(0x0d, LSB);
-		HexBuf[BufTransCnt++] = BufTransUpper(0x0e, (DSOCtlBase | 0x20));
-		HexBuf[BufTransCnt++] = BufTransLower(0x0e, (DSOCtlBase | 0x20));
-		HexBuf[BufTransCnt++] = BufTransUpper(0x0e, (DSOCtlBase & 0xdf));
-		HexBuf[BufTransCnt++] = BufTransLower(0x0e, (DSOCtlBase & 0xdf));                                           
-		HexBuf[BufTransCnt++] = 0x7E;
-		write(fd_w,HexBuf,BufTransCnt);  
-		close(fd_w);
-	}
-}
-*/
-//-----------------------------------------------------
 void SPI_Out_DAC(unsigned char DAC, unsigned char MSB, unsigned char LSB)
 {
     unsigned char SPItmp = 0x00;
@@ -871,23 +605,13 @@ void DAC_Out_SPI()
     MSB = (OffsetDacVal[0] & 0xff00) >> 8;
     MSB |= 0x80;
 
-    //LSB = 0x8a;
-    //MSB = 0x85;//ChA offset = 0V 0x58a 0x80 selects ChA
     SPI_Out_DAC(2, MSB, LSB);//ChA
 
     LSB = OffsetDacVal[1] & 0x00ff;
     MSB = (OffsetDacVal[1] & 0xff00) >> 8;
     MSB |= 0x40;
 
-    //LSB = 0x80;
-    //MSB = 0x45;//ChB offset = 0V 0x580 0x40 selects ChB
     SPI_Out_DAC(2, MSB, LSB); //ChB
-
-//    LSB = 0xc0;
-//    MSB = 0x03f;//LA Threshold 
-//    SPI_Out_DAC(1, MSB, LSB);//Logic Threshold
-
-
 }        //set trigger value
 
 
@@ -951,29 +675,6 @@ unsigned short CalcOffsetRawValueFromVoltage(double volts,unsigned char Chan)
 
     return (unsigned short) DacVal;
 }
-/*
-for(i=0;i<2;i++){
-		printf("vbit[%d]=%f\n",i,vbit[i]);
-	}
-	for(i=0;i<2;i++){
-		printf("OffsetVBit[%d]=%f\n",i,OffsetVBit[i]);
-	}
-	for(i=0;i<2;i++){
-		printf("OffsetCenterVal[%d]=0x%x\n",i,OffsetCenterVal[i]);
-	}
-	printf("\n");
-	for(i=0;i<2;i++){
-		printf("vbitDiv10[%d]=%f\n",i,vbitDiv10[i]);
-	}
-	for(i=0;i<2;i++){
-		printf("OffsetVBitDiv10[%d]=%f\n",i,OffsetVBitDiv10[i]);
-	}
-	for(i=0;i<2;i++){
-		printf("OffsetCenterValDiv10[%d]=0x%x\n",i,OffsetCenterValDiv10[i]);
-	}
-
-}
-*/
  
 //-----------------------------------------------------
 			
@@ -1012,15 +713,11 @@ void VoltageConvert()
                 CalcVoltageFromRawValue(AnalogDataA[ii],
                 VbitA,
                 PAtnA);
-//                GetVbit(0),
-//                ProbeAttn[0]);
 
             AnalogVoltageDataB[ii] =
                 CalcVoltageFromRawValue(AnalogDataB[ii],
                 VbitB,
                 PAtnB);
-//                GetVbit(1),
-//                ProbeAttn[1]);
         }
 }
 //-----------------------------------------------------
@@ -1096,44 +793,6 @@ void ArmMSO()
 		close(fd_w);
 	}
 }
-//-----------------------------------------------------
-/*
-	vDiv[0];		vDiv[1];
-	ProbeAttn[0];	ProbeAttn[1];
-	ACDCMode[0];	ACDCMode[1];
-	OffsetDbl[0];	OffsetDbl[1];
-	LogFam;
-	sampleInterval;
-	TrigPosition;
-	TrigLevel[0];	TrigLevel[1];
-	TrigSlope[0];	TrigSlope[1];	TrigSlope[2];
-	TrigLAWord;		TrigSPIWd;		TrigI2CWd;
-	TrigSPIMode;
-	TrigWidth;
-	TrigModeDSO;
-	TrigChan;
-
-typedef enum {
-    TRIG_CHAN_DSO,
-	TRIG_CHAN_DSO1,
-	TRIG_CHAN_LA,
-	TRIG_CHAN_SER_I2C,
-	TRIG_CHAN_SER_SPI,
-	nMaxTrigChanDefines
-} TrigChanDefines ;
-
-TrigChanDefines TrigChan;
-
-typedef enum  {
-	TRIG_DSO_EDGE,
-	TRIG_DSO_GE,
-	TRIG_DSO_LT,
-	nMaxTrigModedefines
-} TrigModeDefines;
-TrigModeDefines TrigModeDSO = TRIG_DSO_EDGE;
-			*/
-
-
 //-----------------------------------------------------
 void ConfigureTriggerHardware()
 {
@@ -1248,9 +907,6 @@ void ConfigureTriggerHardware()
 		HexBuf[BufTransCnt++] = BufTransUpper(0x04, MSB);
 		HexBuf[BufTransCnt++] = BufTransLower(0x04, MSB);
 
-
-
-//		if (TrigSlope[TrigChan] == SLOPE_FALLING) TrigChSel |= 0x08;
 		if (TrigSlope[2] == SLOPE_FALLING) TrigChSel |= 0x08;
 		else TrigChSel &= 0xf7;
 
@@ -1382,19 +1038,6 @@ void ConfigureTriggerHardware()
 
 		write(fd_w,HexBuf,BufTransCnt);  
 		close(fd_w);
-/*
-		SerTrigWdX[0] = SerTrigWd[0];
-		SerTrigWdX[1] = SerIgnWd[0];
-		SerTrigWdX[2] = SerTrigWd[1];
-		SerTrigWdX[3] = SerIgnWd[1];
-		SerTrigWdX[4] = SerTrigWd[2];
-		SerTrigWdX[5] = SerIgnWd[2];
-		SerTrigWdX[6] = SerTrigWd[3];
-		SerTrigWdX[7] = SerIgnWd[3];
-		TrigChSelX = TrigChSel;
-		WriteTest();		
-*/
-		
 	}//fd_w
 }
 //-----------------------------------------------------
@@ -1444,14 +1087,6 @@ void ConfigureTriggerPosition()
 
 void ConfigureHardwareMSO()
 {
-//    unsigned char MSB = 0, LSB = 0;
-//    Boolean TimerStat = false;
-//    if (MSO1800.frmDSO.timer1.Enabled)
-//    {
-//        TimerStat = false;
-//        MSO1800.frmDSO.timer1.Stop();
-//    }
-//        byte tmpGoStat = vars.GoStat;
         CalcRateMSBLSB(sampleInterval);
         ClkRate_Out(ClkRateMSB, ClkRateLSB);
 
@@ -1465,14 +1100,6 @@ void ConfigureHardwareMSO()
 		ConfigureTriggerPosition();
         //SerialWrite(SerialP1, timer1, RateBuf + DACBuf1 + DACBuf2 + TrigBuf + TrigPosBuf, vars.DSOD[UnitNum].HardwareStatus);
     
-//    vars.DSOD[UnitNum].HardwareNeedsConfiguringMSO = false;
-//    vars.DSOD[UnitNum].HardwareNeedsConfiguringDAC = false;
-
-//    if (TimerStat)
-//    {
-//        MSO1800.frmDSO.timer1.Start();
-//    }
-
 }
 
 
@@ -1608,25 +1235,6 @@ void SPI_Mem_Out(unsigned char val)
 	write(fd_w,HexBuf,BufTransCnt);  
 }
 
-//-----------------------------------------------------
-/*//SPI Write
-void SPI_Write(unsigned char Dev, unsigned char Addr, unsigned char Data)
-{
-    unsigned char mode;
-
-    SPI_Start(Dev);
-    mode = 0x06; //WREN
-    SPI_Mem_Out(mode);
-    SPI_Stop(Dev);
-
-    SPI_Start(Dev);
-    mode = 0x02; //Write
-    SPI_Mem_Out(mode);
-    SPI_Mem_Out(Addr);
-    SPI_Mem_Out(Data);
-    SPI_Stop(Dev);
-}
-*/
 //-----------------------------------------------------
 //SPI read byte 
 unsigned char SPI_Read_Gut82(unsigned char Dev)
@@ -2062,8 +1670,6 @@ void InitSettings()
 	TrigWidth[0] = 0;
 	TrigWidth[1] = 0;
 	//TrigWidth
-//	TrigModeDSO[0] = TRIG_DSO_EDGE;
-//	TrigModeDSO[1] = TRIG_DSO_EDGE;
 	TrigModeDSO[0] = 0;
 	TrigModeDSO[1] = 0;
 	//TrigModeDSO
@@ -2108,109 +1714,21 @@ void WriteMsoSettings()
 	}
 }
 //-----------------------------------
-/*void WriteTest()
-{
-	FILE *fp;
-	// open the file 
-	fp = fopen("testout.txt", "wb");
-	if(fp)
-	{
-		fprintf(fp,"SerTrigWdX, %X %X %X %X %X %X %X %X\n ",SerTrigWdX[0],SerTrigWdX[1],SerTrigWdX[2],SerTrigWdX[3],SerTrigWdX[4],SerTrigWdX[5],SerTrigWdX[6],SerTrigWdX[7]);
-		fprintf(fp,"TrigSPIMode, %X\n",TrigSPIMode);
-		fprintf(fp,"TrigChSelX, %X\n",TrigChSelX);
-		fprintf(fp,"SlowMode, %X\n",SlowMode);
-		
-		fclose(fp);
-	}
-}*/
-//-----------------------------------
-/*void ReadMsoSettings()
-{
-	char fBuf[512],	vBuf[512],pBuf[512];
-	FILE *fp;
-	int ii,jj;
-
-	// open the file 
-	fp = fopen("msoset.txt", "rb");
-	if(fp){
-		fBuf[0]=0;
-		while(fscanf(fp,"%s",&fBuf[0])>0){
-			pBuf[0]=0;
-			vBuf[0]=0;
-			ii = 0;
-			jj = 0;
-			while(fBuf[ii]!=','){
-				pBuf[ii]=fBuf[ii];
-				ii++;
-			}
-			pBuf[ii]=0;
-			ii++;
-			while(fBuf[ii]!=0){
-				vBuf[jj]=fBuf[ii];
-				ii++;
-				jj++;
-			}
-			vBuf[jj]=0;
-			if(strcmp(pBuf,"TrigI2CWd")==0) {
-				TrigI2CWd[0]=0;
-				strncat(TrigI2CWd,vBuf,32);
-			}
-			if(strcmp(pBuf,"TrigSPIWd")==0) {
-				TrigSPIWd[0]=0; 
-				strncat(TrigSPIWd,vBuf,32);
-			}
-			if(strcmp(pBuf,"vDiv0")==0) vDiv[0]=atoi(vBuf);
-			if(strcmp(pBuf,"vDiv1")==0) vDiv[1]=atoi(vBuf);
-			if(strcmp(pBuf,"ProbeAttn0")==0) ProbeAttn[0]=atoi(vBuf);
-			if(strcmp(pBuf,"ProbeAttn1")==0) ProbeAttn[1]=atoi(vBuf);
-			if(strcmp(pBuf,"ACDCMode0")==0) ACDCMode[0]=atoi(vBuf);
-			if(strcmp(pBuf,"ACDCMode1")==0) ACDCMode[1]=atoi(vBuf);
-			if(strcmp(pBuf,"OffsetDbl0")==0) OffsetDbl[0]=atoi(vBuf);
-			if(strcmp(pBuf,"OffsetDbl1")==0) OffsetDbl[1]=atoi(vBuf);
-			if(strcmp(pBuf,"LogFam")==0) LogFam=atoi(vBuf);
-			if(strcmp(pBuf,"sampleInterval")==0) sampleInterval=atoi(vBuf);
-			if(strcmp(pBuf,"TrigLevel0")==0) TrigLevel[0]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigLevel1")==0) TrigLevel[1]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigSlope0")==0) TrigSlope[0]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigSlope1")==0) TrigSlope[1]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigLAWord")==0) {TrigLAWord[0]=0; strncat(TrigLAWord,vBuf,8);}
-			if(strcmp(pBuf,"TrigLASlope")==0) TrigSlope[2]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigPosition")==0) TrigPosition=atoi(vBuf);
-			if(strcmp(pBuf,"TrigSPIMode")==0) TrigSPIMode=atoi(vBuf);
-			if(strcmp(pBuf,"TrigWidth0")==0) TrigWidth[0]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigWidth1")==0) TrigWidth[1]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigModeDSO0")==0) TrigModeDSO[0]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigModeDSO1")==0) TrigModeDSO[1]=atoi(vBuf);
-			if(strcmp(pBuf,"TrigChan")==0) TrigChan=atoi(vBuf);
-			fBuf[0]=0;
-//			fscanf(fp,"%s",&fBuf);
-		}
-		fclose(fp);
-	}
-}*/
-//-----------------------------------
 void ReadMsoSettings2()
 {
-//	char fBuf[512],	vBuf[512],pBuf[512];
 	char *fBuf;
 	char vBuf[512],pBuf[512],tBuf[512];
 	FILE *fp;
 	int ii,jj;
-//	fBuf=malloc(512*sizeof(char));
 	int n,i;
 
 	/* open the file */
-//	printf("test1\n");
 	fp = fopen("msoset.txt", "rb");
 	if(fp){
-//		fBuf[0]=0;
 		i=0;
 		fBuf = fgets(tBuf,512,fp);
 		while(fBuf){
 			n = strlen(fBuf);
-//			printf("%d, len = %d\n",i,n);
-	//		printf("%s",fBuf);
-		//			while(fscanf(fp,"%s",&fBuf[0])>0){
 
 			pBuf[0]=0;
 			vBuf[0]=0;
@@ -2260,8 +1778,6 @@ void ReadMsoSettings2()
 			if(strcmp(pBuf,"TrigModeDSO1")==0) TrigModeDSO[1]=atoi(vBuf);
 			if(strcmp(pBuf,"TrigChan")==0) TrigChan=atoi(vBuf);
 			fBuf[0]=0;
-//			fscanf(fp,"%s",&fBuf);
-		//}
 			fBuf = fgets(tBuf,512,fp);
 			i++;
 		}
@@ -2277,44 +1793,18 @@ void ReadQueryString()
 	unsigned char i;
 	unsigned char s;
 	unsigned char wd=0;
-//	int ret;
-//	FILE *fp;
 	char sBuf[512];
 	long sidTmp;
 
-//	clock_t start,end,end2;
-
-//	int Cnt;
-
-//	printf("NV= %s %s\n",name_val_pairs[0].name,name_val_pairs[0].value);
 
 	while(name_val_pairs[nv_entry_number].name[0] != '\0')
 	{
 		if(strcmp(name_val_pairs[nv_entry_number].name,"sid")==0)
 			{
 				sid= atol(name_val_pairs[nv_entry_number].value);
-			/*	printf("%d\n\n",sid);
-				if(wd){
-					fp = fopen("msodata.csv", "ab");
-					if(fp)
-					{
-						fprintf(fp,"sid = %d\n",sid);
-						fclose(fp);
-						ret = 1;
-					}
-					else ret = 0;
-					sprintf(sBuf,"gzip -f msodata.csv\n");
-					system(sBuf);
-					
-
-				}*/
-
 			}
 
 			
-//		printf("Name=%s, Value=%s\n\n",
-//               name_val_pairs[nv_entry_number].name,
-//               name_val_pairs[nv_entry_number].value);
 		if(strcmp(name_val_pairs[nv_entry_number].name,"VDIV0")==0){
 			vDiv[0] = atoi(name_val_pairs[nv_entry_number].value);
 			SetChanged++;
@@ -2412,9 +1902,7 @@ void ReadQueryString()
 		}
 		//Logic trig slope
 		if(strcmp(name_val_pairs[nv_entry_number].name,"TRPOS")==0){
-//			TrigPosition = atof(name_val_pairs[nv_entry_number].value);
 			TrigPosition = atoi(name_val_pairs[nv_entry_number].value);
-//			TrigPosition = 555;
 			SetChanged++;
 		}
 		//TrigPosition
@@ -2459,23 +1947,11 @@ void ReadQueryString()
 		{
 			TrigModeDSO[0] = atoi(name_val_pairs[nv_entry_number].value);
 
-//			if(strcmp(name_val_pairs[nv_entry_number].value,"GE")==0)
-//				TrigModeDSO[0] = TRIG_DSO_GE;
-//			else if(strcmp(name_val_pairs[nv_entry_number].value,"LT")==0)
-//				TrigModeDSO[0] = TRIG_DSO_LT;
-//			else
-//				TrigModeDSO[0] = TRIG_DSO_EDGE;//ED
 			SetChanged++;
 		}
 		if(strcmp(name_val_pairs[nv_entry_number].name,"TRMODE1")==0)
 		{
 			TrigModeDSO[1] = atoi(name_val_pairs[nv_entry_number].value);
-//			if(strcmp(name_val_pairs[nv_entry_number].value,"GE")==0)
-//				TrigModeDSO[1] = TRIG_DSO_GE;
-//			else if(strcmp(name_val_pairs[nv_entry_number].value,"LT")==0)
-//				TrigModeDSO[1] = TRIG_DSO_LT;
-//			else
-//				TrigModeDSO[1] = TRIG_DSO_EDGE;//ED
 			SetChanged++;
 		}
 		//TrigModeDSO	
@@ -2505,7 +1981,6 @@ void ReadQueryString()
 
 		if(strcmp(name_val_pairs[nv_entry_number].name,"i")==0)
 		{
-//			j=sscanf(Parms[i+1],"%c",&report);
 			GetSerPort28();
 			if(strcmp(name_val_pairs[nv_entry_number].value,"I")==0)
 			{
@@ -2515,11 +1990,6 @@ void ReadQueryString()
 				WriteMsoParam();
 				LEDOff();
 				MsoBusy=0;
-//				for(i=0;i<32;i++){
-//					printf("%x ",MBuf[i]);
-//				}
-//				printf("\n");	
-
 				printf("P_Rdy\n%d\n",sid);	
 			}
 			else if(strcmp(name_val_pairs[nv_entry_number].value,"C")==0
@@ -2632,7 +2102,6 @@ void ReadQueryString()
 			else if((strcmp(name_val_pairs[nv_entry_number].value,"T")==0)||
 			        (strcmp(name_val_pairs[nv_entry_number].value,"t")==0))
 			{
-//start = clock();
 				i = CheckTriggerStatus();
 				i&=0x1f;
 //				printf("TrigStat = %x\n\n",i);	
@@ -2641,18 +2110,9 @@ void ReadQueryString()
 				else{
 					if(i==22){
 						if(sid==CurrSid){
-//						ReadMsoParam();
-//						ParseEprom(&FBuf[0]);
-//						ReadBuffer2();
 						ReadBuffer();
 						VoltageConvert();
-//						while(!WriteMsoData());
-
-//						end2 = clock();
 						WriteMsoData();
-//printf("fileWrite time was: %f\n", (end2 - end) / (double)CLOCKS_PER_SEC);
-//end = clock();
-//printf("BeadBuf time was: %f\n", (end - start) / (double)CLOCKS_PER_SEC);
 						wd =1;
 						MsoBusy=0;
 						printf("%d\n%d\n",29,CurrSid);
@@ -2669,11 +2129,6 @@ void ReadQueryString()
 				ReadMsoParam();
 				ParseEprom(&FBuf[0]);
 				ReadBuffer();
-//				printf("ReadBuf = %x\n\n",HexBuf[0]);
-//		        for (Cnt = 0; Cnt < (4096 / 4); Cnt++)//x4
-//					printf("%X %X %X\n",AnalogDataA[Cnt],AnalogDataB[Cnt],LogicData[Cnt]); 
-
-//				printf("ReadBuf\n\n");	
 
 				if(strcmp(name_val_pairs[nv_entry_number].value,"b")==0){
 					for(i=0;i<2;i++) printf("vbit[%d]=%f\n",i,vbit[i]);
@@ -2684,16 +2139,9 @@ void ReadQueryString()
 					for(i=0;i<2;i++) printf("OffsetVBitDiv10[%d]=%f\n",i,OffsetVBitDiv10[i]);
 					for(i=0;i<2;i++) printf("OffsetCenterValDiv10[%d]=0x%x\n",i,OffsetCenterValDiv10[i]);
 				}
-
 				VoltageConvert();
-
-//		        for (Cnt = 0; Cnt < ((4096 / 4)-1); Cnt++)//x4
-//					printf("%f %f\n",AnalogVoltageDataA[Cnt],AnalogVoltageDataB[Cnt]); 
-
 				WriteMsoData();
 				MsoBusy=0;
-//				printf("%d\n%d\n",29,sid);	
-
 			}
 		} 
 	   nv_entry_number++;
@@ -2712,28 +2160,18 @@ int WriteMsoData()
 	/* open the file */
 	sprintf(sBuf,"tmp/msodata%d.csv",CurrSid);
 	fp = fopen(sBuf, "wb");
-//	fp = fopen("msodata.csv", "wb");
 	if(fp)
 	{
 
         for (Cnt = 0; Cnt < 1023; Cnt++)
 			fprintf(fp,"%f\t%f\t%d\n",AnalogVoltageDataA[Cnt],AnalogVoltageDataB[Cnt],LogicData[Cnt]); 
 		
-//		fprintf(fp,"sid = %d\n",sid);
 		fclose(fp);
 		ret = 1;
 	}
 	else ret = 0;
 
-//	sprintf(sBuf,"cp msodata.csv msodata%d.csv\n",CurrSid);
-//	system(sBuf);
-
-//	sprintf(sBuf,"gzip -f msodata.csv\n");
-//	system(sBuf);
 	printf("%d\n%d\n",29,CurrSid);
-
-
-
 	return ret;
 
 }
@@ -2773,23 +2211,6 @@ void PrintMSOSettings()
 
 }
 //===================================================
-/*	char *pEnvPtr;
-
-	pEnvPtr= getenv ("REQUEST_METHOD"); 
-	printf ("REQUEST_METHOD= "); 
-	   if (!pEnvPtr) 
-		  printf ("<NULL-POINTER>\n"); 
-	   else 
-		  printf ("%s\n", pEnvPtr); 
-
-	pEnvPtr= getenv ("QUERY_STRING"); 
-	printf ("QUERY_STRING= "); 
-	   if (!pEnvPtr) 
-		  printf ("<NULL-POINTER>\n"); 
-	   else 
-		  printf ("%s\n", pEnvPtr); 
-*/
-//===================================================
 int main(int Parm_Count, char* Parms[])
 {
 	line = (char *) malloc(18);
@@ -2797,9 +2218,6 @@ int main(int Parm_Count, char* Parms[])
 	ReadMsoSettings2();//read back from msoset.txt
 
 		while (FCGI_Accept() >= 0) {
-//		char *contentLength = getenv("CONTENT_LENGTH");
-//		int len;
-
 
 		if (!Get_input())
 		{
@@ -2808,27 +2226,11 @@ int main(int Parm_Count, char* Parms[])
 			printf("Content-Type: text/plain\n");
 			printf("Cache-Control: no-cache,no-store\n");
 			printf("Status: 200 OK\n\n");
-
-
-//			printf("Information decoded was:\r\n\r\n");
 			SetChanged = 0;
-	//		InitSettings();
-		//	printf("nv3= %s %s\n",name_val_pairs[0].name,name_val_pairs[0].value);
-	//		ReadMsoSettings();//read back from msoset.txt
-		//	printf("nv4= %s %s\n",name_val_pairs[0].name,name_val_pairs[0].value);
 			ReadQueryString();
-		//	printf("\n\nEnviron\n");
-		//	PrintMSOSettings();
-
 			if(SetChanged)	WriteMsoSettings();//write to msoset.txt
-
-
 			printf("\n\n");
    } // while 
-   
-	
-//	printf("\r\n");
-//    exit(EXIT_SUCCESS);
 	free(line);
     return 0;
 }
